@@ -1,0 +1,62 @@
+class Solution:
+    def longestBalanced(self, s: str) -> int:
+        # Case 1: longest run of the same character
+        def run_length(s: str) -> int:
+            max_len = cur_len = 1
+            for i in range(1, len(s)):
+                if s[i] == s[i - 1]:
+                    cur_len += 1
+                else:
+                    cur_len = 1
+                max_len = max(max_len, cur_len)
+            return max_len
+        
+        # Case 2: two characters
+        def two_char_balanced(s: str, a: str, b: str) -> int:
+            pos = {0: -1}
+            diff = 0
+            res = 0
+            for i, c in enumerate(s):
+                if c == a:
+                    diff += 1
+                elif c == b:
+                    diff -= 1
+                else:
+                    # reset when third char appears
+                    pos = {0: i}
+                    diff = 0
+                    continue
+                if diff in pos:
+                    res = max(res, i - pos[diff])
+                else:
+                    pos[diff] = i
+            return res
+        
+        # Case 3: three characters
+        pos3 = {(0, 0): -1}
+        cnt_a = cnt_b = cnt_c = 0
+        res3 = 0
+        for i, c in enumerate(s):
+            if c == 'a':
+                cnt_a += 1
+            elif c == 'b':
+                cnt_b += 1
+            else:
+                cnt_c += 1
+            key = (cnt_a - cnt_b, cnt_b - cnt_c)
+            if key in pos3:
+                res3 = max(res3, i - pos3[key])
+            else:
+                pos3[key] = i
+        
+        # Combine all cases
+        ans1 = run_length(s)
+        ans2 = max(
+            two_char_balanced(s, 'a', 'b'),
+            two_char_balanced(s, 'b', 'c'),
+            two_char_balanced(s, 'a', 'c')
+        )
+        
+        return max(ans1, ans2, res3)
+
+        
