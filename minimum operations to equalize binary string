@@ -1,0 +1,50 @@
+from collections import deque
+from sortedcontainers import SortedList
+
+class Solution:
+    def minOperations(self, s: str, k: int) -> int:
+        n = len(s)
+        start = s.count('0')
+        
+        if start == 0:
+            return 0
+        
+        # Maintain unvisited by parity
+        even = SortedList(i for i in range(0, n+1, 2))
+        odd = SortedList(i for i in range(1, n+1, 2))
+        
+        if start % 2 == 0:
+            even.remove(start)
+        else:
+            odd.remove(start)
+        
+        q = deque([(start, 0)])
+        
+        while q:
+            z, steps = q.popleft()
+            
+            low = max(0, k - (n - z))
+            high = min(k, z)
+            
+            L = z + k - 2*high
+            R = z + k - 2*low
+            
+            parity = (z + k) % 2
+            target = even if parity == 0 else odd
+            
+            # Find all values in [L, R]
+            idx = target.bisect_left(L)
+            to_remove = []
+            
+            while idx < len(target) and target[idx] <= R:
+                val = target[idx]
+                if val == 0:
+                    return steps + 1
+                q.append((val, steps + 1))
+                to_remove.append(val)
+                idx += 1
+            
+            for val in to_remove:
+                target.remove(val)
+        
+        return -1
